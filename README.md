@@ -2,6 +2,12 @@
 
 Study CompassとTraining Compassを切り替えながら、資格勉強・運動・回復の「次の一歩」を小さくするExpoアプリです。PWA、iOS、Androidを同じTypeScriptコードベースで提供します。
 
+## 初心者向けローカルレビュー
+
+Windowsでは [`START_REVIEW_WINDOWS.cmd`](START_REVIEW_WINDOWS.cmd) をダブルクリックしてください。初回だけ必要なパッケージを導入し、Life CompassのWeb版を起動します。ブラウザが自動で開かなければ `http://localhost:8081` を開きます。終了するときは黒いコマンド画面で `Ctrl+C` を押します。
+
+Life CompassとCMTRをまとめた詳しい手順は、AI-Memoryの `Knowledge/ローカルレビュー起動ガイド.md` にあります。
+
 ## Data and privacy
 
 - 状態はWatermelonDBへ保存します。WebはIndexedDB、iOS/AndroidはSQLiteです。
