@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "Life Compass",
+    "slug": "life-compass",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "lifecompass",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.undo418.lifecompass",
+      "infoPlist": {
+        "NSCameraUsageDescription": "フォームを保存せずに自分で確認するため、カメラを使用します。",
+        "NSHealthShareUsageDescription": "許可された体重とワークアウトを端末内へ読み取るため、ヘルスケアデータを使用します。"
+      }
+    },
+    "android": {
+      "package": "com.undo418.lifecompass",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png",
+      "name": "Life Compass",
+      "shortName": "Compass",
+      "themeColor": "#11675f",
+      "backgroundColor": "#f4f7f3",
+      "display": "standalone"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-secure-store",
+      "expo-sharing",
+      [
+        "expo-camera",
+        { "cameraPermission": "フォームを保存せずに自分で確認するため、カメラを使用します。", "recordAudioAndroid": false }
+      ],
+      [
+        "expo-notifications",
+        { "defaultChannel": "daily-compass" }
+      ],
+      "react-native-health-connect",
+      "@kingstinct/react-native-healthkit"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

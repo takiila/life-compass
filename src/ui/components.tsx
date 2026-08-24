@@ -1,0 +1,38 @@
+import { Link, useRouter } from 'expo-router';
+import { PropsWithChildren, ReactNode } from 'react';
+import { Pressable, ScrollView, StyleProp, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useAppState } from '@/src/state/AppStateProvider';
+import { colors } from './theme';
+
+export function Screen({ children }: PropsWithChildren) { return <SafeAreaView style={styles.safe} edges={['top']}><ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">{children}</ScrollView></SafeAreaView>; }
+
+export function ModeHeader({ eyebrow, title, subtitle }: { eyebrow: string; title: string; subtitle?: string }) {
+  const { state, actions } = useAppState();
+  const router = useRouter();
+  const switchMode = (mode: 'study' | 'training') => { actions.setMode(mode); router.replace(mode === 'study' ? '/study' : '/training'); };
+  return <View style={styles.header}><Text style={styles.eyebrow}>{eyebrow}</Text><Text style={styles.title}>{title}</Text>{subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}<View style={styles.modeRow}><Choice selected={state.mode === 'study'} onPress={() => switchMode('study')} label="Study" tint="study" /><Choice selected={state.mode === 'training'} onPress={() => switchMode('training')} label="Training" /></View></View>;
+}
+
+export function Card({ children, style }: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) { return <View style={[styles.card, style]}>{children}</View>; }
+export function SectionTitle({ children }: PropsWithChildren) { return <Text style={styles.sectionTitle}>{children}</Text>; }
+export function Body({ children, tone = 'muted' }: PropsWithChildren<{ tone?: 'muted' | 'normal' | 'danger' }>) { return <Text style={[styles.body, tone === 'normal' && styles.normal, tone === 'danger' && styles.danger]}>{children}</Text>; }
+
+export function PrimaryButton({ label, onPress, disabled, tone = 'primary' }: { label: string; onPress: () => void; disabled?: boolean; tone?: 'primary' | 'study' | 'quiet' }) {
+  return <Pressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={({ pressed }) => [styles.primaryButton, tone === 'study' && styles.studyButton, tone === 'quiet' && styles.quietButton, disabled && styles.disabled, pressed && styles.pressed]}><Text style={[styles.primaryButtonText, tone === 'quiet' && styles.quietButtonText]}>{label}</Text></Pressable>;
+}
+
+export function Choice({ selected, onPress, label, tint = 'primary' }: { selected: boolean; onPress: () => void; label: string; tint?: 'primary' | 'study' }) {
+  return <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={onPress} style={[styles.choice, selected && (tint === 'study' ? styles.choiceStudy : styles.choiceSelected)]}><Text style={[styles.choiceText, selected && styles.choiceTextSelected]}>{label}</Text></Pressable>;
+}
+export function ChoiceRow({ children }: PropsWithChildren) { return <View style={styles.choiceRow}>{children}</View>; }
+export function Field(props: TextInputProps & { label: string }) { return <View style={styles.field}><Text style={styles.label}>{props.label}</Text><TextInput placeholderTextColor="#81908a" {...props} style={[styles.input, props.style]} /></View>; }
+export function Metric({ label, value }: { label: string; value: string | number }) { return <View style={styles.metric}><Text style={styles.metricValue}>{value}</Text><Text style={styles.metricLabel}>{label}</Text></View>; }
+export function RouteCard({ href, eyebrow, title, description }: { href: string; eyebrow: string; title: string; description: string }) { return <Link href={href as never} asChild><Pressable style={({ pressed }) => [styles.routeCard, pressed && styles.pressed]}><View style={{ flex: 1 }}><Text style={styles.routeEyebrow}>{eyebrow}</Text><Text style={styles.routeTitle}>{title}</Text><Text style={styles.routeText}>{description}</Text></View><Text style={styles.arrow}>›</Text></Pressable></Link>; }
+export function Notice({ children, danger = false }: PropsWithChildren<{ danger?: boolean }>) { return <View style={[styles.notice, danger && styles.noticeDanger]}><Text style={[styles.noticeText, danger && styles.danger]}>{children}</Text></View>; }
+export function Inline({ children }: { children: ReactNode }) { return <View style={styles.inline}>{children}</View>; }
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.background }, screen: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 18, paddingBottom: 42 }, header: { paddingTop: 18, paddingBottom: 20 }, eyebrow: { color: colors.primary, fontWeight: '900', fontSize: 12, letterSpacing: 1.2 }, title: { color: colors.ink, fontWeight: '900', fontSize: 31, letterSpacing: -0.7, marginTop: 5 }, subtitle: { color: colors.muted, lineHeight: 21, marginTop: 7 }, modeRow: { flexDirection: 'row', gap: 8, marginTop: 17 }, card: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 21, padding: 17, marginBottom: 14 }, sectionTitle: { color: colors.ink, fontWeight: '900', fontSize: 18, marginBottom: 7 }, body: { color: colors.muted, lineHeight: 21 }, normal: { color: colors.ink }, danger: { color: colors.danger }, primaryButton: { minHeight: 50, backgroundColor: colors.primary, borderRadius: 15, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, marginTop: 12 }, studyButton: { backgroundColor: colors.study }, quietButton: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 }, primaryButtonText: { color: '#fff', fontWeight: '900', fontSize: 15 }, quietButtonText: { color: colors.primary }, disabled: { opacity: 0.45 }, pressed: { opacity: 0.72 }, choiceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }, choice: { minHeight: 42, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center' }, choiceSelected: { borderColor: colors.primary, backgroundColor: colors.primarySoft }, choiceStudy: { borderColor: colors.study, backgroundColor: colors.studySoft }, choiceText: { color: colors.muted, fontWeight: '800' }, choiceTextSelected: { color: colors.ink }, field: { marginTop: 13 }, label: { color: colors.ink, fontWeight: '800', fontSize: 13, marginBottom: 6 }, input: { minHeight: 48, borderColor: colors.border, borderWidth: 1, borderRadius: 14, paddingHorizontal: 13, backgroundColor: colors.background, color: colors.ink, fontSize: 16 }, metric: { flex: 1, minWidth: 90, backgroundColor: colors.background, padding: 12, borderRadius: 14 }, metricValue: { color: colors.ink, fontSize: 21, fontWeight: '900' }, metricLabel: { color: colors.muted, fontSize: 11, fontWeight: '700', marginTop: 3 }, routeCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 18, padding: 15, marginBottom: 10 }, routeEyebrow: { color: colors.primary, fontSize: 10, fontWeight: '900', letterSpacing: 1 }, routeTitle: { color: colors.ink, fontSize: 16, fontWeight: '900', marginTop: 3 }, routeText: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 3 }, arrow: { color: colors.primary, fontSize: 28 }, notice: { backgroundColor: colors.warningSoft, borderRadius: 14, padding: 13, marginTop: 12 }, noticeDanger: { backgroundColor: colors.dangerSoft }, noticeText: { color: colors.warning, lineHeight: 19, fontWeight: '700' }, inline: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+});
