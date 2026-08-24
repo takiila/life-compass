@@ -51,9 +51,27 @@ test('serves the Expo bundle with JavaScript MIME and hydrates controls', async 
 });
 
 test('all important routes render without an application error', async ({ page }) => {
-  for (const route of ['/study', '/training', '/journey', '/settings', '/weekly-review', '/backup', '/training/goal', '/training/recovery', '/training/form-guide', '/training/library', '/blue-team', '/dev/theme-lab']) {
+  for (const route of ['/study', '/training', '/journey', '/journey/tutorial', '/settings', '/weekly-review', '/backup', '/training/goal', '/training/recovery', '/training/form-guide', '/training/form-history', '/training/exercises', '/training/exercises/supported-squat', '/training/library', '/blue-team', '/dev/theme-lab']) {
     await page.goto(route);
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.locator('body')).not.toBeEmpty();
   }
+});
+
+test('records form history and allows the Journey tutorial to be replayed', async ({ page }) => {
+  await page.goto('/training/form-guide');
+  await page.getByRole('button', { name: 'フォームを確認した' }).click();
+  await page.getByText('フォーム確認履歴', { exact: true }).click();
+  await expect(page).toHaveURL(/\/training\/form-history/);
+  await expect(page.getByText('まだ履歴はありません。フォームガイドの「フォームを確認した」から記録できます。')).toBeHidden();
+  await expect(page.getByRole('link', { name: /ガイドをもう一度見る/ })).toBeVisible();
+
+  await page.goto('/journey/tutorial');
+  await page.getByRole('button', { name: '案内を確認した' }).click();
+  await expect(page.getByText(/前回確認:/)).toBeVisible();
+  await page.waitForTimeout(500);
+  await page.reload();
+  await expect(page.getByText(/前回確認:/)).toBeVisible();
+  await page.goto('/settings');
+  await expect(page.getByText('RPGチュートリアルを再表示', { exact: true })).toBeVisible();
 });

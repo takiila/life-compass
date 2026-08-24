@@ -17,6 +17,8 @@ export default function TrainingScreen() {
     <RouteCard href="/training/goal" eyebrow="GOAL PACE" title="体重目標と見込み" description="身長・体重・期限から一般的なペースを確認します。" />
     <RouteCard href="/training/recovery" eyebrow="RECOVERY" title="部位別の回復" description="負荷と筋肉痛を短く記録します。" />
     <RouteCard href="/training/form-guide" eyebrow="FORM" title="フォームガイド" description="支持ありの始め方と中止の目安を確認します。" />
+    <RouteCard href="/training/exercises" eyebrow="EXERCISES" title="種目ライブラリ" description="一覧から準備、呼吸、セルフチェック、代替方法まで確認します。" />
+    <RouteCard href="/training/form-history" eyebrow="FORM HISTORY" title="フォーム確認履歴" description="採点せず、確認したガイドと日時だけを振り返ります。" />
     <RouteCard href="/training/library" eyebrow="KNOWLEDGE" title="知識書庫" description="余力、回復、器具、目的別の基本を読みます。" />
     <RouteCard href="/form-camera" eyebrow="SELF VIEW" title="カメラで自己確認" description="保存・採点なしのライブプレビューです。" />
   </Screen>;

@@ -20,6 +20,7 @@ function normalizeState(value: unknown): AppState {
     journeyInventory: { ...DEFAULT_STATE.journeyInventory, ...raw.journeyInventory },
     notification: { ...DEFAULT_STATE.notification, ...raw.notification },
     settings: { ...DEFAULT_STATE.settings, ...raw.settings },
+    formHistory: raw.formHistory ?? [],
     restoreAudits: raw.restoreAudits ?? [],
     restoreSnapshots: raw.restoreSnapshots ?? [],
   };

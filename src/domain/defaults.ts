@@ -11,6 +11,7 @@ export const DEFAULT_STATE: AppState = {
   measurements: [],
   workouts: [],
   recoveries: [],
+  formHistory: [],
   journey: [],
   journeyInventory: { spentCoins: 0, ownedCosmetics: [], unlockedRewards: [], completedTrials: [], nebulaRuns: [] },
   healthSamples: [],

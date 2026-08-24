@@ -15,14 +15,15 @@ const stateSchema = z.object({
   measurements: z.array(z.object({ id, measuredAt: dateString, weightKg: z.number().positive().max(500), source: z.enum(['manual', 'healthkit', 'health-connect', 'legacy']), externalId: z.string().max(240).optional() })).max(100_000),
   workouts: z.array(z.object({ id, startedAt: dateString, completedAt: dateString, focus: z.string().min(1).max(240), minutes: z.number().int().min(1).max(1440), sets: z.array(z.object({ reps: z.number().int().min(0).max(10_000), weightKg: z.number().min(0).max(2000).optional(), rpe: z.number().min(0).max(10) })).max(1000), safeCompletion: z.boolean(), source: z.enum(['manual', 'healthkit', 'health-connect', 'legacy']), externalId: z.string().max(240).optional() })).max(100_000),
   recoveries: z.array(z.object({ id, createdAt: dateString, area: z.enum(['chest', 'back', 'legs', 'shoulders', 'arms', 'core']), soreness: z.number().min(0).max(10), intensity: z.number().min(0).max(10), note: z.string().max(2000).optional() })).max(100_000),
+  formHistory: z.array(z.object({ id, guideId: id, title: z.string().min(1).max(160), viewedAt: dateString })).max(100_000).default([]),
   journey: z.array(z.object({ id, createdAt: dateString, mode: z.enum(['study', 'training', 'shared']), kind: z.enum(['check-in', 'study', 'workout', 'recovery', 'form', 'rest', 'knowledge']), xp: z.number().int().min(0).max(18), title: z.string().min(1).max(240) })).max(100_000),
-  journeyInventory: z.object({ spentCoins: z.number().int().nonnegative(), ownedCosmetics: z.array(id), unlockedRewards: z.array(id), completedTrials: z.array(id), nebulaRuns: z.array(z.object({ id, completedAt: dateString, safeReturn: z.boolean() })) }),
+  journeyInventory: z.object({ spentCoins: z.number().int().nonnegative(), ownedCosmetics: z.array(id), unlockedRewards: z.array(id), completedTrials: z.array(id), nebulaRuns: z.array(z.object({ id, completedAt: dateString, safeReturn: z.boolean() })), tutorialCompletedAt: dateString.optional() }),
   healthSamples: z.array(z.object({ externalId: z.string().min(1).max(240), provider: z.enum(['healthkit', 'health-connect']), sampleType: z.enum(['weight', 'workout']), importedAt: dateString })).max(200_000),
   notification: z.object({ enabled: z.boolean(), hour: z.number().int().min(0).max(23), minute: z.number().int().min(0).max(59), mode: z.enum(['study', 'training']) }), settings: z.object({ reducedMotion: z.boolean(), haptics: z.boolean() }),
   restoreAudits: z.array(z.object({ id, restoredAt: dateString, sourceVersion: z.number().int().positive(), counts: z.record(z.string(), z.number().int().nonnegative()) })).max(5),
   restoreSnapshots: z.array(z.object({ id, createdAt: dateString, payload: z.string().min(2) })).max(5).default([]), legacyMigratedAt: dateString.optional(),
 }).superRefine((state, context) => {
-  const collections = [state.checkIns, state.studySessions, state.measurements, state.workouts, state.recoveries, state.journey, state.journeyInventory.nebulaRuns];
+  const collections = [state.checkIns, state.studySessions, state.measurements, state.workouts, state.recoveries, state.formHistory, state.journey, state.journeyInventory.nebulaRuns];
   for (const collection of collections) {
     const seen = new Set<string>();
     for (const item of collection) { if (seen.has(item.id)) context.addIssue({ code: 'custom', message: `duplicate id: ${item.id}` }); seen.add(item.id); }
@@ -50,4 +51,4 @@ function legacyBackup(value: unknown): AppBackupV2 | undefined {
 
 export function parseBackup(value: unknown): AppBackupV2 { const current = backupSchema.safeParse(value); if (current.success) return current.data as AppBackupV2; const converted = legacyBackup(value); if (converted) return backupSchema.parse(converted) as AppBackupV2; throw current.error; }
 export function parseStateSnapshot(payload: string): AppState { return stateSchema.parse(JSON.parse(payload)) as AppState; }
-export function backupCounts(state: AppState): Record<string, number> { return { studySessions: state.studySessions.length, measurements: state.measurements.length, workouts: state.workouts.length, recoveries: state.recoveries.length, journey: state.journey.length }; }
+export function backupCounts(state: AppState): Record<string, number> { return { studySessions: state.studySessions.length, measurements: state.measurements.length, workouts: state.workouts.length, recoveries: state.recoveries.length, formHistory: state.formHistory.length, journey: state.journey.length }; }

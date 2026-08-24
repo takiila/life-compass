@@ -21,6 +21,7 @@ export default function SettingsScreen() {
     <Card><SectionTitle>演出と振動</SectionTitle><Text style={{ color: colors.ink, fontWeight: '800' }}>演出を弱める</Text><Switch value={state.settings.reducedMotion} onValueChange={(reducedMotion) => actions.updateSettings({ ...state.settings, reducedMotion })} /><Text style={{ color: colors.ink, fontWeight: '800', marginTop: 10 }}>振動フィードバック</Text><Switch value={state.settings.haptics} onValueChange={(haptics) => actions.updateSettings({ ...state.settings, haptics })} /></Card>
     <RouteCard href="/backup" eyebrow="LOCAL DATA" title="バックアップと復元" description="端末データを検証付きJSONへ保存します。" />
     <RouteCard href="/native-integrations" eyebrow="NATIVE" title="Health・安全領域・DB" description="端末連携の権限と読み取り状況を確認します。" />
+    <RouteCard href="/journey/tutorial" eyebrow="REPLAY" title="RPGチュートリアルを再表示" description="Life Journeyの案内を最初から何度でも確認します。" />
     <RouteCard href="/dev/theme-lab" eyebrow="DEVELOPMENT" title="Theme Lab" description="ライト配色と低刺激表示を確認します。" />
     <Card><SectionTitle>安全領域の自己診断</SectionTitle><Body>テスト用の値を保存・照合後すぐ削除します。健康データは使いません。</Body><PrimaryButton label="Keychain / Keystoreを確認" tone="quiet" onPress={async () => setMessage((await verifySecureStorage()).message)} /></Card>
   </Screen>;

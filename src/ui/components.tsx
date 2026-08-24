@@ -20,16 +20,18 @@ export function SectionTitle({ children }: PropsWithChildren) { return <Text sty
 export function Body({ children, tone = 'muted' }: PropsWithChildren<{ tone?: 'muted' | 'normal' | 'danger' }>) { return <Text style={[styles.body, tone === 'normal' && styles.normal, tone === 'danger' && styles.danger]}>{children}</Text>; }
 
 export function PrimaryButton({ label, onPress, disabled, tone = 'primary' }: { label: string; onPress: () => void; disabled?: boolean; tone?: 'primary' | 'study' | 'quiet' }) {
-  return <Pressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={({ pressed }) => [styles.primaryButton, tone === 'study' && styles.studyButton, tone === 'quiet' && styles.quietButton, disabled && styles.disabled, pressed && styles.pressed]}><Text style={[styles.primaryButtonText, tone === 'quiet' && styles.quietButtonText]}>{label}</Text></Pressable>;
+  const { state } = useAppState();
+  return <Pressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={({ pressed }) => [styles.primaryButton, tone === 'study' && styles.studyButton, tone === 'quiet' && styles.quietButton, disabled && styles.disabled, pressed && !state.settings.reducedMotion && styles.pressed]}><Text style={[styles.primaryButtonText, tone === 'quiet' && styles.quietButtonText]}>{label}</Text></Pressable>;
 }
 
 export function Choice({ selected, onPress, label, tint = 'primary' }: { selected: boolean; onPress: () => void; label: string; tint?: 'primary' | 'study' }) {
-  return <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={onPress} style={[styles.choice, selected && (tint === 'study' ? styles.choiceStudy : styles.choiceSelected)]}><Text style={[styles.choiceText, selected && styles.choiceTextSelected]}>{label}</Text></Pressable>;
+  const { state } = useAppState();
+  return <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={onPress} style={({ pressed }) => [styles.choice, selected && (tint === 'study' ? styles.choiceStudy : styles.choiceSelected), pressed && !state.settings.reducedMotion && styles.pressed]}><Text style={[styles.choiceText, selected && styles.choiceTextSelected]}>{label}</Text></Pressable>;
 }
 export function ChoiceRow({ children }: PropsWithChildren) { return <View style={styles.choiceRow}>{children}</View>; }
 export function Field(props: TextInputProps & { label: string }) { return <View style={styles.field}><Text style={styles.label}>{props.label}</Text><TextInput placeholderTextColor="#81908a" {...props} style={[styles.input, props.style]} /></View>; }
 export function Metric({ label, value }: { label: string; value: string | number }) { return <View style={styles.metric}><Text style={styles.metricValue}>{value}</Text><Text style={styles.metricLabel}>{label}</Text></View>; }
-export function RouteCard({ href, eyebrow, title, description }: { href: string; eyebrow: string; title: string; description: string }) { return <Link href={href as never} asChild><Pressable style={({ pressed }) => [styles.routeCard, pressed && styles.pressed]}><View style={{ flex: 1 }}><Text style={styles.routeEyebrow}>{eyebrow}</Text><Text style={styles.routeTitle}>{title}</Text><Text style={styles.routeText}>{description}</Text></View><Text style={styles.arrow}>›</Text></Pressable></Link>; }
+export function RouteCard({ href, eyebrow, title, description }: { href: string; eyebrow: string; title: string; description: string }) { const { state } = useAppState(); return <Link href={href as never} asChild><Pressable style={({ pressed }) => [styles.routeCard, pressed && !state.settings.reducedMotion && styles.pressed]}><View style={{ flex: 1 }}><Text style={styles.routeEyebrow}>{eyebrow}</Text><Text style={styles.routeTitle}>{title}</Text><Text style={styles.routeText}>{description}</Text></View><Text style={styles.arrow}>›</Text></Pressable></Link>; }
 export function Notice({ children, danger = false }: PropsWithChildren<{ danger?: boolean }>) { return <View style={[styles.notice, danger && styles.noticeDanger]}><Text style={[styles.noticeText, danger && styles.danger]}>{children}</Text></View>; }
 export function Inline({ children }: { children: ReactNode }) { return <View style={styles.inline}>{children}</View>; }
 

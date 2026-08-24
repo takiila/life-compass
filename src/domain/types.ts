@@ -88,6 +88,13 @@ export type RestoreAudit = {
   counts: Record<string, number>;
 };
 
+export type FormGuideView = {
+  id: string;
+  guideId: string;
+  title: string;
+  viewedAt: string;
+};
+
 export type AppState = {
   schemaVersion: 2;
   mode: CompassMode;
@@ -108,6 +115,7 @@ export type AppState = {
   measurements: BodyMeasurement[];
   workouts: WorkoutSession[];
   recoveries: RecoveryRecord[];
+  formHistory: FormGuideView[];
   journey: JourneyEvent[];
   journeyInventory: {
     spentCoins: number;
@@ -115,6 +123,7 @@ export type AppState = {
     unlockedRewards: string[];
     completedTrials: string[];
     nebulaRuns: { id: string; completedAt: string; safeReturn: boolean }[];
+    tutorialCompletedAt?: string;
   };
   healthSamples: HealthSampleRef[];
   notification: NotificationPreference;

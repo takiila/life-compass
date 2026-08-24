@@ -52,10 +52,14 @@ function RootLayoutNav() {
         <Stack.Screen name="training/goal" options={{ title: '体重目標' }} />
         <Stack.Screen name="training/recovery" options={{ title: '回復状況' }} />
         <Stack.Screen name="training/form-guide" options={{ title: 'フォームガイド' }} />
+        <Stack.Screen name="training/form-history" options={{ title: 'フォーム確認履歴' }} />
+        <Stack.Screen name="training/exercises/index" options={{ title: 'Exercise Library' }} />
+        <Stack.Screen name="training/exercises/[id]" options={{ title: '種目ガイド' }} />
         <Stack.Screen name="training/library" options={{ title: '知識書庫' }} />
         <Stack.Screen name="native-integrations" options={{ title: '端末統合' }} />
         <Stack.Screen name="form-camera" options={{ title: 'フォーム自己確認' }} />
         <Stack.Screen name="journey/[feature]" options={{ title: 'Life Journey' }} />
+        <Stack.Screen name="journey/tutorial" options={{ title: 'Journeyの案内' }} />
         <Stack.Screen name="blue-team" options={{ title: 'ブルーチーム' }} />
         <Stack.Screen name="weekly-review" options={{ title: '週次レビュー' }} />
         <Stack.Screen name="dev/theme-lab" options={{ title: 'Theme Lab' }} />

@@ -31,6 +31,8 @@ type AppActions = {
   setWeightGoal: (heightCm: number, targetWeightKg: number, targetWeightDate: string) => void;
   addWorkout: (workout: Omit<WorkoutSession, 'id' | 'startedAt' | 'completedAt' | 'source'>) => void;
   addRecovery: (recovery: Omit<RecoveryRecord, 'id' | 'createdAt'>) => void;
+  recordFormView: (guideId: string, title: string) => void;
+  completeRpgTutorial: () => void;
   award: (kind: JourneyEvent['kind'], mode: JourneyEvent['mode'], title: string) => void;
   updateNotification: (notification: NotificationPreference) => Promise<string>;
   updateSettings: (settings: AppState['settings']) => void;
@@ -94,6 +96,20 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       commit((current) => ({ ...current, recoveries: [...current.recoveries, { ...recovery, id: createId('recovery'), createdAt: new Date().toISOString() }] }));
       award('recovery', 'training', '回復を確認した');
     },
+    recordFormView: (guideId, title) => commit((current) => {
+      const viewedAt = new Date().toISOString();
+      const next = {
+        ...current,
+        formHistory: [...current.formHistory, { id: createId('form-view'), guideId, title, viewedAt }],
+      };
+      if (!canAward(current.journey, 'form', 'training')) return next;
+      const event: JourneyEvent = { id: createId('journey'), createdAt: viewedAt, mode: 'training', kind: 'form', xp: xpFor('form'), title: `${title}を確認した` };
+      return { ...next, journey: [...current.journey, event] };
+    }),
+    completeRpgTutorial: () => commit((current) => ({
+      ...current,
+      journeyInventory: { ...current.journeyInventory, tutorialCompletedAt: new Date().toISOString() },
+    })),
     award,
     updateNotification: async (notification) => {
       const result = await scheduleDailyReminder(notification);
