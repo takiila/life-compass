@@ -9,9 +9,14 @@ const server = createServer(async (request, response) => {
   try {
     const pathname = decodeURIComponent(new URL(request.url ?? '/', 'http://127.0.0.1').pathname);
     const relative = normalize(pathname).replace(/^[/\\]+/, '');
-    let target = join(root, relative);
-    if (!target.startsWith(root)) throw new Error('invalid path');
-    try { if ((await stat(target)).isDirectory()) target = join(target, 'index.html'); } catch { target = join(root, 'index.html'); }
+    const candidates = relative
+      ? [join(root, relative), join(root, `${relative}.html`), join(root, relative, 'index.html'), join(root, relative.replace(/[^/\\]+$/, '[id].html'))]
+      : [join(root, 'index.html')];
+    let target = join(root, 'index.html');
+    for (const candidate of candidates) {
+      if (!candidate.startsWith(root)) throw new Error('invalid path');
+      try { if ((await stat(candidate)).isFile()) { target = candidate; break; } } catch { /* try the next static-route shape */ }
+    }
     const data = await readFile(target);
     response.writeHead(200, { 'Content-Type': mime[extname(target)] ?? 'application/octet-stream', 'Cache-Control': 'no-store' });
     response.end(data);
@@ -46,7 +51,7 @@ test('serves the Expo bundle with JavaScript MIME and hydrates controls', async 
   const trainingMode = page.getByRole('button', { name: 'Training' }).first();
   await trainingMode.focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByText('無理のない一歩', { exact: true })).toBeVisible();
+  await expect(page.getByText('今日の状態から決める', { exact: true })).toBeVisible();
   await page.context().setOffline(false);
 });
 
@@ -74,4 +79,16 @@ test('records form history and allows the Journey tutorial to be replayed', asyn
   await expect(page.getByText(/前回確認:/)).toBeVisible();
   await page.goto('/settings');
   await expect(page.getByText('RPGチュートリアルを再表示', { exact: true })).toBeVisible();
+});
+
+test('completes the Training golden path from recommendation to reflection', async ({ page }) => {
+  await page.goto('/training');
+  await expect(page.getByText("TODAY'S RECOMMENDATION", { exact: true })).toBeVisible();
+  await expect(page.getByText(/本人が変更・中止できます/)).toBeVisible();
+  await page.getByRole('button', { name: 'この提案で始める' }).click();
+  await expect(page.getByText('実行手順', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '7', exact: true }).click();
+  await page.getByRole('button', { name: '実行結果を記録する' }).click();
+  await expect(page.getByText(/次は痛みや疲労が残っていないか/)).toBeVisible();
+  await expect(page.getByText('1', { exact: true }).first()).toBeVisible();
 });
