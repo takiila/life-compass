@@ -11,8 +11,8 @@ if errorlevel 1 (
 )
 
 if not exist "node_modules\expo\package.json" (
-  echo Installing packages. This can take several minutes the first time.
-  call npm install
+  echo Running first-time setup. This can take several minutes.
+  call "%~dp0SETUP_NEW_PC.cmd"
   if errorlevel 1 goto :error
 )
 

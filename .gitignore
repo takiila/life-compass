@@ -32,8 +32,18 @@ playwright-report/
 .DS_Store
 *.pem
 
+# Windows and editors
+Thumbs.db
+Desktop.ini
+.idea/
+.history/
+*.swp
+*.swo
+
 # local env files
-.env*.local
+.env
+.env.*
+!.env.example
 
 # typescript
 *.tsbuildinfo
