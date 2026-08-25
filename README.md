@@ -19,6 +19,8 @@ cd life-compass
 
 `SETUP_NEW_PC.cmd` はツールの存在を確認し、`package-lock.json` から `npm ci` で依存関係を復元して、`npm run check` まで実行します。既存のローカルDB、ユーザーデータ、生成物を削除しません。
 
+既存PCでセットアップをやり直す場合は、先にLife Compassのレビュー画面とExpoのコマンド画面を終了してください。使用中の `node_modules` があるとWindowsが `EPERM` を返すため、その場合も画面を閉じて `SETUP_NEW_PC.cmd` を再実行します。セットアップは実行中processを勝手に終了しません。
+
 ## 初心者向けローカルレビュー
 
 Windowsでは [`START_REVIEW_WINDOWS.cmd`](START_REVIEW_WINDOWS.cmd) をダブルクリックしてください。初回だけ必要なパッケージを導入し、Life CompassのWeb版を起動します。ブラウザが自動で開かなければ `http://localhost:8081` を開きます。終了するときは黒いコマンド画面で `Ctrl+C` を押します。

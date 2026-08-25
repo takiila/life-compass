@@ -51,7 +51,13 @@ Push-Location $projectRoot
 try {
     if (Test-Path (Join-Path $projectRoot 'package-lock.json')) {
         Write-Host 'Installing exact dependencies with npm ci...'
-        Invoke-Checked -FilePath 'npm.cmd' -Arguments @('ci')
+        try {
+            Invoke-Checked -FilePath 'npm.cmd' -Arguments @('ci')
+        }
+        catch {
+            Write-Warning 'If npm reports EPERM or a file-in-use error, stop any Life Compass review/Expo windows and run SETUP_NEW_PC.cmd again.'
+            throw
+        }
     }
     else {
         Write-Warning 'package-lock.json was not found. Falling back to npm install.'
