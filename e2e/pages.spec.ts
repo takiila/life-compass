@@ -51,16 +51,54 @@ test('serves the Expo bundle with JavaScript MIME and hydrates controls', async 
   const trainingMode = page.getByRole('button', { name: 'Training' }).first();
   await trainingMode.focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByText('今日の状態から決める', { exact: true })).toBeVisible();
+  await expect(page.getByText('今日の現在地', { exact: true })).toBeVisible();
   await page.context().setOffline(false);
 });
 
 test('all important routes render without an application error', async ({ page }) => {
-  for (const route of ['/study', '/training', '/journey', '/journey/tutorial', '/settings', '/weekly-review', '/backup', '/training/goal', '/training/recovery', '/training/form-guide', '/training/form-history', '/training/exercises', '/training/exercises/supported-squat', '/training/library', '/blue-team', '/dev/theme-lab', '/dev/rpg-lab']) {
+  for (const route of ['/study', '/training', '/journey', '/journey/tutorial', '/settings', '/weekly-review', '/backup', '/training/check-in', '/training/reflection', '/training/goal', '/training/recovery', '/training/form-guide', '/training/form-history', '/training/exercises', '/training/exercises/supported-squat', '/training/library', '/blue-team', '/dev/theme-lab', '/dev/rpg-lab']) {
     await page.goto(route);
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.locator('body')).not.toBeEmpty();
   }
+});
+
+test('creates a two-tier Daily Training plan and saves a short reflection', async ({ page }) => {
+  await page.goto('/training');
+  await expect(page.getByText('今日の現在地', { exact: true })).toBeVisible();
+  await expect(page.getByText('今日の最低ライン', { exact: true }).last()).toBeVisible();
+  await expect(page.getByText('今日の理想ライン', { exact: true })).toBeVisible();
+  await page.getByRole('link', { name: /今日のプランを作る/ }).click();
+  await expect(page.getByText('今日の状態からプランを作る', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '今日のプランを保存' }).click();
+  await expect(page.getByText('今日の最低ライン', { exact: true }).last()).toBeVisible();
+  await page.getByRole('button', { name: /完了にする/ }).first().click();
+  await page.goto('/training/reflection');
+  await page.getByRole('button', { name: '振り返りを保存' }).click();
+  await expect(page.getByText('今日の振り返りを保存しました。')).toBeVisible();
+  await page.waitForTimeout(500);
+  await page.reload();
+  await expect(page.getByText('今日の振り返りを保存しました。')).toBeVisible();
+});
+
+test('keeps an urgent-symptom plan on safety hold', async ({ page }) => {
+  await page.goto('/training/check-in');
+  await page.getByRole('button', { name: 'ある' }).click();
+  await expect(page.getByText(/本人調整で解除できません/)).toBeVisible();
+  await page.getByRole('button', { name: '今日のプランを保存' }).click();
+  await expect(page.getByText(/Safety hold中です/).last()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'この提案で始める' })).toHaveCount(0);
+});
+
+test('keeps the weekly proposal pending until the user decides', async ({ page }) => {
+  await page.goto('/weekly-review');
+  await page.getByRole('button', { name: '今週を集計して案を作る' }).click();
+  await expect(page.getByText('本人が選ぶまで来週へ反映しません。')).toBeVisible();
+  await page.getByRole('button', { name: 'このまま採用' }).click();
+  await expect(page.getByText(/本人の決定:/)).toBeVisible();
+  await page.waitForTimeout(500);
+  await page.reload();
+  await expect(page.getByText(/本人の決定:/)).toBeVisible();
 });
 
 test('keeps the RPG sandbox unavailable in the production export', async ({ page }) => {

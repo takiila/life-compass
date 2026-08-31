@@ -4,22 +4,29 @@ import { createContext, PropsWithChildren, useCallback, useContext, useEffect, u
 import { backupCounts, createBackup, parseBackup, parseStateSnapshot } from '@/src/domain/backup';
 import { DEFAULT_STATE, createId } from '@/src/domain/defaults';
 import { canAward, xpFor } from '@/src/domain/journey';
+import { adjustDailyPlan, buildDailyTrainingPlan, completePlanItem, PlanAdjustment, planProgress, upsertDailyTrainingPlan } from '@/src/domain/dailyTrainingPlan';
+import { pendingDailyPlanRewards, planRewardSourceId, weeklyRewardEligibility } from '@/src/domain/trainingRewards';
+import { decideWeeklyAdjustment, proposeWeeklyAdjustment } from '@/src/domain/trainingReview';
 import {
   AppState,
   BodyMeasurement,
   CompassMode,
   DailyCheckIn,
+  DailyReflection,
   JourneyEvent,
   NotificationPreference,
   RecoveryRecord,
   StudyGoal,
   StudySession,
   WorkoutSession,
+  TrainingCondition,
+  WeeklyAdjustmentLevel,
 } from '@/src/domain/types';
 import { pickBackupFile, saveBackupFile } from '@/src/platform/backup';
 import { importHealthData } from '@/src/platform/health';
 import { scheduleDailyReminder } from '@/src/platform/notifications';
 import { loadState, saveState } from '@/src/storage/repository';
+import { createPersistenceQueue } from './persistenceQueue';
 
 type AppActions = {
   setMode: (mode: CompassMode) => void;
@@ -43,6 +50,13 @@ type AppActions = {
   unlockJourneyItem: (id: string, cost: number, kind: 'cosmetic' | 'reward') => string;
   completeTrial: (id: string) => void;
   recordNebulaRun: (safeReturn: boolean) => void;
+  saveTrainingCheckInAndCreatePlan: (input: { energy: 1 | 2 | 3 | 4 | 5; availableMinutes: 2 | 5 | 10 | 15 | 25 | 35; training: TrainingCondition }) => string;
+  completeDailyPlanItem: (planId: string, itemId: string) => void;
+  adjustDailyTrainingPlan: (planId: string, adjustment: PlanAdjustment) => void;
+  saveDailyReflection: (input: Pick<DailyReflection, 'nutrition' | 'sleep' | 'fatigue' | 'mood' | 'note'>) => void;
+  createWeeklyAdjustment: (weekStart: string) => string;
+  decideWeeklyAdjustment: (id: string, decision: 'accepted' | 'edited' | 'rejected', level?: WeeklyAdjustmentLevel) => void;
+  claimWeeklyReward: (weekStart: string, rewardId: string) => string;
 };
 
 type ContextValue = { state: AppState; loading: boolean; error?: string; actions: AppActions };
@@ -52,6 +66,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const [state, setState] = useState<AppState>(DEFAULT_STATE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
+  const persistenceQueue = useMemo(() => createPersistenceQueue(saveState, (cause) => setError(cause instanceof Error ? cause.message : '保存に失敗しました。')), []);
 
   useEffect(() => {
     loadState().then(setState).catch((cause) => setError(cause instanceof Error ? cause.message : '端末データを読み込めませんでした。')).finally(() => setLoading(false));
@@ -60,10 +75,10 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const commit = useCallback((update: (current: AppState) => AppState) => {
     setState((current) => {
       const next = update(current);
-      saveState(next).catch((cause) => setError(cause instanceof Error ? cause.message : '保存に失敗しました。'));
+      persistenceQueue.enqueue(next);
       return next;
     });
-  }, []);
+  }, [persistenceQueue]);
 
   const award = useCallback((kind: JourneyEvent['kind'], mode: JourneyEvent['mode'], title: string) => {
     commit((current) => {
@@ -130,7 +145,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         restoreAudits: [{ id: createId('restore'), restoredAt: new Date().toISOString(), sourceVersion: backup.version, counts: backupCounts(backup.state) }, ...backup.state.restoreAudits].slice(0, 5),
         restoreSnapshots: [{ id: createId('snapshot'), createdAt: new Date().toISOString(), payload: JSON.stringify(state) }, ...(backup.state.restoreSnapshots ?? [])].slice(0, 5),
       };
-      await saveState(restored);
+      await persistenceQueue.enqueue(restored);
       setState(restored);
       return 'バックアップを検証し、復元しました。';
     },
@@ -138,7 +153,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       const snapshot = state.restoreSnapshots[0];
       if (!snapshot) return '戻せる復元前スナップショットはありません。';
       const restored = parseStateSnapshot(snapshot.payload);
-      await saveState(restored);
+      await persistenceQueue.enqueue(restored);
       setState(restored);
       return '直前の復元前スナップショットへ戻しました。';
     },
@@ -176,6 +191,60 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     },
     completeTrial: (id) => commit((current) => current.journeyInventory.completedTrials.includes(id) ? current : ({ ...current, journeyInventory: { ...current.journeyInventory, completedTrials: [...current.journeyInventory.completedTrials, id] } })),
     recordNebulaRun: (safeReturn) => commit((current) => ({ ...current, journeyInventory: { ...current.journeyInventory, nebulaRuns: [...current.journeyInventory.nebulaRuns, { id: createId('nebula'), completedAt: new Date().toISOString(), safeReturn }] } })),
+    saveTrainingCheckInAndCreatePlan: (input) => {
+      const now = new Date();
+      const date = now.toISOString().slice(0, 10);
+      const checkIn: DailyCheckIn = { ...input, id: createId('checkin'), mode: 'training', createdAt: now.toISOString() };
+      const planId = `plan-${date}`;
+      commit((current) => {
+        const checkIns = [...current.checkIns.filter((entry) => !(entry.mode === 'training' && entry.createdAt.slice(0, 10) === date)), checkIn];
+        const nextState = { ...current, checkIns };
+        const plan = buildDailyTrainingPlan({ state: nextState, checkInId: checkIn.id, now });
+        return { ...nextState, dailyTrainingPlans: upsertDailyTrainingPlan(current.dailyTrainingPlans, plan) };
+      });
+      return planId;
+    },
+    completeDailyPlanItem: (planId, itemId) => commit((current) => {
+      const plan = current.dailyTrainingPlans.find((entry) => entry.id === planId);
+      if (!plan) return current;
+      const completed = completePlanItem(plan, itemId);
+      const now = new Date().toISOString();
+      const journey = [...current.journey, ...pendingDailyPlanRewards(completed, current.journey).map((kind): JourneyEvent => ({ id: createId('journey'), createdAt: now, mode: 'training', kind, xp: xpFor(kind), title: kind === 'plan-minimum' ? '今日の最低ラインを達成した' : kind === 'plan-ideal' ? '今日の理想ラインを追加達成した' : '任意の一歩を記録した', sourceId: planRewardSourceId(planId, kind as 'plan-minimum' | 'plan-ideal' | 'plan-optional') }))];
+      return { ...current, dailyTrainingPlans: current.dailyTrainingPlans.map((entry) => entry.id === planId ? completed : entry), journey };
+    }),
+    adjustDailyTrainingPlan: (planId, adjustment) => commit((current) => ({ ...current, dailyTrainingPlans: current.dailyTrainingPlans.map((plan) => plan.id === planId ? adjustDailyPlan(plan, adjustment) : plan) })),
+    saveDailyReflection: (input) => commit((current) => {
+      const date = new Date().toISOString().slice(0, 10);
+      const plan = current.dailyTrainingPlans.find((entry) => entry.date === date);
+      const progress = plan ? planProgress(plan) : { minimumAchieved: false, idealAchieved: false };
+      const previous = current.dailyReflections.find((entry) => entry.date === date);
+      const reflection: DailyReflection = { ...input, note: input.note?.trim() || undefined, id: previous?.id ?? createId('daily-reflection'), date, planId: plan?.id, createdAt: previous?.createdAt ?? new Date().toISOString(), minimumAchieved: progress.minimumAchieved, idealAchieved: progress.idealAchieved };
+      const exists = current.journey.some((entry) => entry.kind === 'daily-reflection' && entry.sourceId === `reflection:${date}`);
+      const journey = exists ? current.journey : [...current.journey, { id: createId('journey'), createdAt: new Date().toISOString(), mode: 'training' as const, kind: 'daily-reflection' as const, xp: xpFor('daily-reflection'), title: '今日を短く振り返った', sourceId: `reflection:${date}` }];
+      return { ...current, dailyReflections: [...current.dailyReflections.filter((entry) => entry.date !== date), reflection], journey };
+    }),
+    createWeeklyAdjustment: (weekStart) => {
+      const id = `weekly-${weekStart}`;
+      commit((current) => {
+        const proposal = { ...proposeWeeklyAdjustment(current, weekStart), id };
+        return { ...current, weeklyAdjustments: [...current.weeklyAdjustments.filter((entry) => entry.weekStart !== weekStart), proposal] };
+      });
+      return id;
+    },
+    decideWeeklyAdjustment: (id, decision, level) => commit((current) => ({ ...current, weeklyAdjustments: current.weeklyAdjustments.map((entry) => entry.id === id ? decideWeeklyAdjustment(entry, { decision, level }) : entry) })),
+    claimWeeklyReward: (weekStart, rewardId) => {
+      const adjustment = state.weeklyAdjustments.find((entry) => entry.weekStart === weekStart);
+      if (!adjustment) return '先に週次レビューを作成してください。';
+      const eligibility = weeklyRewardEligibility(adjustment.summary, state.journeyInventory.weeklyRewardClaims, weekStart);
+      if (!eligibility.eligible || eligibility.rewardId !== rewardId) return eligibility.alreadyClaimed ? 'この週の報酬は受取済みです。' : '今週の特別報酬条件にはまだ届いていません。';
+      commit((current) => {
+        if (current.journeyInventory.weeklyRewardClaims.some((claim) => claim.weekStart === weekStart)) return current;
+        const claimedAt = new Date().toISOString();
+        const journey = current.journey.some((entry) => entry.kind === 'weekly-review' && entry.sourceId === `week:${weekStart}`) ? current.journey : [...current.journey, { id: createId('journey'), createdAt: claimedAt, mode: 'training' as const, kind: 'weekly-review' as const, xp: xpFor('weekly-review'), title: '週の前進を振り返った', sourceId: `week:${weekStart}` }];
+        return { ...current, journey, journeyInventory: { ...current.journeyInventory, unlockedRewards: current.journeyInventory.unlockedRewards.includes(rewardId) ? current.journeyInventory.unlockedRewards : [...current.journeyInventory.unlockedRewards, rewardId], weeklyRewardClaims: [...current.journeyInventory.weeklyRewardClaims, { weekStart, rewardId, claimedAt }] } };
+      });
+      return '週の特別報酬を解放しました。';
+    },
   }), [award, commit, state]);
 
   useEffect(() => {

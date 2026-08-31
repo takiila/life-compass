@@ -2,6 +2,7 @@ import { CompassMode, JourneyEvent } from './types';
 
 const DAILY_CAPS: Record<JourneyEvent['kind'], number> = {
   'check-in': 8, study: 18, workout: 18, recovery: 10, form: 8, rest: 10, knowledge: 8,
+  'plan-minimum': 8, 'plan-ideal': 8, 'plan-optional': 3, 'daily-reflection': 5, 'weekly-review': 8,
 };
 
 export const xpFor = (kind: JourneyEvent['kind']) => DAILY_CAPS[kind];

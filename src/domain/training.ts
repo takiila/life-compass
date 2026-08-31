@@ -30,7 +30,7 @@ export function recommendTraining(input: Input): TrainingRecommendation {
   const available = checkIn?.availableMinutes ?? 10;
   const minutes: 5 | 10 | 20 = available < 10 ? 5 : available < 20 ? 10 : 20;
 
-  if (checkIn?.note === 'urgent-symptom') {
+  if (checkIn?.training?.urgentSymptom === true || checkIn?.note === 'urgent-symptom') {
     return {
       status: 'stop', title: '今日は運動を開始しない', focus: '安全確認', minutes: 5,
       reason: '胸部症状、めまい、失神、異常な息切れの申告があるため、安全を最優先します。このアプリは診断しません。',

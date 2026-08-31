@@ -1,7 +1,7 @@
 import { AppState } from './types';
 
 export const DEFAULT_STATE: AppState = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   mode: 'study',
   onboardingComplete: false,
   adultConfirmed: false,
@@ -11,9 +11,12 @@ export const DEFAULT_STATE: AppState = {
   measurements: [],
   workouts: [],
   recoveries: [],
+  dailyTrainingPlans: [],
+  dailyReflections: [],
+  weeklyAdjustments: [],
   formHistory: [],
   journey: [],
-  journeyInventory: { spentCoins: 0, ownedCosmetics: [], unlockedRewards: [], completedTrials: [], nebulaRuns: [] },
+  journeyInventory: { spentCoins: 0, ownedCosmetics: [], unlockedRewards: [], completedTrials: [], nebulaRuns: [], weeklyRewardClaims: [] },
   healthSamples: [],
   notification: { enabled: false, hour: 20, minute: 0, mode: 'study' },
   settings: { reducedMotion: false, haptics: true },

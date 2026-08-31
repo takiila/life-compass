@@ -1,7 +1,7 @@
 import { Q } from '@nozbe/watermelondb';
 
 import { DEFAULT_STATE } from '@/src/domain/defaults';
-import { createBackup, parseBackup } from '@/src/domain/backup';
+import { normalizeStateV3 } from '@/src/domain/backup';
 import { AppState } from '@/src/domain/types';
 
 import { getDatabase } from './database';
@@ -11,20 +11,7 @@ import { AppStateRecord } from './model';
 const ROOT_KEY = 'root';
 
 function normalizeState(value: unknown): AppState {
-  const raw = value && typeof value === 'object' ? value as Partial<AppState> : {};
-  const merged: AppState = {
-    ...DEFAULT_STATE,
-    ...raw,
-    schemaVersion: 2,
-    environment: { ...DEFAULT_STATE.environment, ...raw.environment },
-    journeyInventory: { ...DEFAULT_STATE.journeyInventory, ...raw.journeyInventory },
-    notification: { ...DEFAULT_STATE.notification, ...raw.notification },
-    settings: { ...DEFAULT_STATE.settings, ...raw.settings },
-    formHistory: raw.formHistory ?? [],
-    restoreAudits: raw.restoreAudits ?? [],
-    restoreSnapshots: raw.restoreSnapshots ?? [],
-  };
-  return parseBackup(createBackup(merged)).state;
+  return normalizeStateV3(value);
 }
 
 export async function loadState(): Promise<AppState> {

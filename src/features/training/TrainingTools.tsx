@@ -1,0 +1,3 @@
+import { RouteCard } from '@/src/ui/components';
+
+export function TrainingTools() { return <><RouteCard href="/training/recovery" eyebrow="RECOVERY" title="部位別の回復" description="負荷と筋肉痛を短く記録します。" /><RouteCard href="/training/form-guide" eyebrow="FORM" title="フォームガイド" description="支持ありの始め方と中止の目安を確認します。" /><RouteCard href="/training/exercises" eyebrow="EXERCISES" title="種目ライブラリ" description="準備、呼吸、代替方法まで確認します。" /><RouteCard href="/training/library" eyebrow="KNOWLEDGE" title="知識書庫" description="余力、回復、器具、目的別の基本を読みます。" /><RouteCard href="/form-camera" eyebrow="SELF VIEW" title="カメラで自己確認" description="保存・採点なしのライブプレビューです。" /></>; }

@@ -1,5 +1,13 @@
 export type CompassMode = 'study' | 'training';
 
+export type TrainingCondition = {
+  sleepQuality: 1 | 2 | 3 | 4 | 5;
+  fatigue: 1 | 2 | 3 | 4 | 5;
+  mood: 1 | 2 | 3 | 4 | 5;
+  soreness: number;
+  urgentSymptom: boolean;
+};
+
 export type DailyCheckIn = {
   id: string;
   mode: CompassMode;
@@ -7,7 +15,60 @@ export type DailyCheckIn = {
   energy: 1 | 2 | 3 | 4 | 5;
   availableMinutes: 2 | 5 | 10 | 15 | 25 | 35;
   note?: string;
+  training?: TrainingCondition;
 };
+
+export type DailyPlanTier = 'minimum' | 'ideal' | 'optional';
+export type DailyPlanCategory = 'training' | 'recovery' | 'nutrition' | 'sleep' | 'measurement' | 'reflection';
+
+export type DailyPlanItem = {
+  id: string;
+  category: DailyPlanCategory;
+  tier: DailyPlanTier;
+  title: string;
+  description?: string;
+  completedAt?: string;
+  source: 'generated' | 'user-edited';
+};
+
+export type DailyTrainingPlan = {
+  id: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+  checkInId?: string;
+  status: 'active' | 'safety-hold' | 'completed';
+  items: DailyPlanItem[];
+  adjustment?: { lighter?: boolean; availableMinutes?: number; avoidedTraining?: boolean; note?: string };
+};
+
+export type DailyReflection = {
+  id: string;
+  date: string;
+  planId?: string;
+  createdAt: string;
+  nutrition: 1 | 2 | 3 | 4 | 5;
+  sleep: 1 | 2 | 3 | 4 | 5;
+  fatigue: 1 | 2 | 3 | 4 | 5;
+  mood: 1 | 2 | 3 | 4 | 5;
+  minimumAchieved: boolean;
+  idealAchieved: boolean;
+  note?: string;
+};
+
+export type WeeklyAdjustmentLevel = 'lighter' | 'maintain' | 'slightly-more';
+export type WeeklyAdjustment = {
+  id: string;
+  weekStart: string;
+  createdAt: string;
+  summary: { minimumDays: number; idealDays: number; reflectionDays: number; workoutMinutes: number; weightTrendKgPerWeek?: number };
+  proposal: { level: WeeklyAdjustmentLevel; reason: string };
+  decision: 'pending' | 'accepted' | 'edited' | 'rejected';
+  acceptedLevel?: WeeklyAdjustmentLevel;
+  decidedAt?: string;
+};
+
+export type WeeklyRewardClaim = { weekStart: string; rewardId: string; claimedAt: string };
 
 export type StudyGoal = {
   qualificationName: string;
@@ -62,9 +123,10 @@ export type JourneyEvent = {
   id: string;
   createdAt: string;
   mode: CompassMode | 'shared';
-  kind: 'check-in' | 'study' | 'workout' | 'recovery' | 'form' | 'rest' | 'knowledge';
+  kind: 'check-in' | 'study' | 'workout' | 'recovery' | 'form' | 'rest' | 'knowledge' | 'plan-minimum' | 'plan-ideal' | 'plan-optional' | 'daily-reflection' | 'weekly-review';
   xp: number;
   title: string;
+  sourceId?: string;
 };
 
 export type HealthSampleRef = {
@@ -96,7 +158,7 @@ export type FormGuideView = {
 };
 
 export type AppState = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   mode: CompassMode;
   onboardingComplete: boolean;
   adultConfirmed: boolean;
@@ -115,6 +177,9 @@ export type AppState = {
   measurements: BodyMeasurement[];
   workouts: WorkoutSession[];
   recoveries: RecoveryRecord[];
+  dailyTrainingPlans: DailyTrainingPlan[];
+  dailyReflections: DailyReflection[];
+  weeklyAdjustments: WeeklyAdjustment[];
   formHistory: FormGuideView[];
   journey: JourneyEvent[];
   journeyInventory: {
@@ -123,6 +188,7 @@ export type AppState = {
     unlockedRewards: string[];
     completedTrials: string[];
     nebulaRuns: { id: string; completedAt: string; safeReturn: boolean }[];
+    weeklyRewardClaims: WeeklyRewardClaim[];
     tutorialCompletedAt?: string;
   };
   healthSamples: HealthSampleRef[];
@@ -133,9 +199,9 @@ export type AppState = {
   legacyMigratedAt?: string;
 };
 
-export type AppBackupV2 = {
+export type AppBackupV3 = {
   format: 'life-compass-backup';
-  version: 2;
+  version: 3;
   exportedAt: string;
   note?: string;
   state: AppState;

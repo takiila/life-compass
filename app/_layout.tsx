@@ -51,6 +51,8 @@ function RootLayoutNav() {
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="backup" options={{ title: 'バックアップ' }} />
         <Stack.Screen name="training/goal" options={{ title: '体重目標' }} />
+        <Stack.Screen name="training/check-in" options={{ title: '今日のプラン' }} />
+        <Stack.Screen name="training/reflection" options={{ title: '今日の振り返り' }} />
         <Stack.Screen name="training/recovery" options={{ title: '回復状況' }} />
         <Stack.Screen name="training/form-guide" options={{ title: 'フォームガイド' }} />
         <Stack.Screen name="training/form-history" options={{ title: 'フォーム確認履歴' }} />
