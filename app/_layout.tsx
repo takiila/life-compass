@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { AppStateProvider } from '@/src/state/AppStateProvider';
+import { RpgSandboxProvider } from '@/src/state/RpgSandboxProvider';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -45,7 +46,7 @@ export default function RootLayout() {
 function RootLayoutNav() {
   return (
     <AppStateProvider>
-      <Stack>
+      <RpgSandboxProvider><Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="backup" options={{ title: 'バックアップ' }} />
@@ -63,7 +64,8 @@ function RootLayoutNav() {
         <Stack.Screen name="blue-team" options={{ title: 'ブルーチーム' }} />
         <Stack.Screen name="weekly-review" options={{ title: '週次レビュー' }} />
         <Stack.Screen name="dev/theme-lab" options={{ title: 'Theme Lab' }} />
-      </Stack>
+        {__DEV__ ? <Stack.Screen name="dev/rpg-lab" options={{ title: 'RPG Sandbox' }} /> : null}
+      </Stack></RpgSandboxProvider>
     </AppStateProvider>
   );
 }

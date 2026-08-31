@@ -10,6 +10,7 @@ export default function JourneyScreen() {
   return <Screen><ModeHeader eyebrow="LIFE JOURNEY" title="小さな選択の旅" subtitle="Study、Training、回復、休養のどれも共通の旅を進めます。" />
     <Inline><Metric label="レベル" value={journey.level} /><Metric label="合計XP" value={journey.xp} /><Metric label="次まで" value={`${journey.next} XP`} /></Inline><View style={{ height: 14 }} />
     <Card><SectionTitle>今日の進行</SectionTitle><Body>同じ種類の行動は1日1回だけXPになります。長さ、重量、連続日数では増えません。</Body>{state.journey.length ? [...state.journey].reverse().slice(0, 6).map((event) => <Body key={event.id} tone="normal">+{event.xp} XP · {event.title}</Body>) : <Body>状態確認から最初の一歩を記録できます。</Body>}</Card>
+    {__DEV__ ? <RouteCard href="/dev/rpg-lab" eyebrow="DEVELOPMENT ONLY" title="RPG Sandboxを開く" description="通常saveを汚さず、主要RPG機能を待ち時間なしで確認します。" /> : null}
     <RouteCard href="/journey/tutorial" eyebrow="GUIDE" title={state.journeyInventory.tutorialCompletedAt ? '旅の案内をもう一度見る' : '旅の案内を見る'} description="XP、塔、星雲、安全な帰還の考え方を確認します。" />
     <RouteCard href="/journey/world" eyebrow="ASTERION" title="星屑の巡礼路" description="フォーム・実践・回復・学習で準備の霧を晴らします。" />
     <RouteCard href="/journey/profile" eyebrow="TRAVELER" title="旅人プロフィール" description="StudyとTrainingそれぞれの実績を確認します。" />
