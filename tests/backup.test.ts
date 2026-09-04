@@ -4,6 +4,13 @@ import { DEFAULT_STATE } from '../src/domain/defaults';
 
 describe('backup schema', () => {
   it('round-trips AppBackupV3', () => { const backup = createBackup(DEFAULT_STATE, 'test'); expect(backup.version).toBe(3); expect(parseBackup(JSON.parse(JSON.stringify(backup)))).toEqual(backup); });
+  it('does not export restore-before-import snapshots', () => {
+    const backup = createBackup({
+      ...DEFAULT_STATE,
+      restoreSnapshots: [{ id: 'snapshot-1', createdAt: new Date().toISOString(), payload: JSON.stringify({ private: 'old data' }) }],
+    });
+    expect(backup.state.restoreSnapshots).toEqual([]);
+  });
   it('rejects unsafe weight values', () => { const backup = createBackup({ ...DEFAULT_STATE, measurements: [{ id: 'x', measuredAt: new Date().toISOString(), weightKg: -1, source: 'manual' }] }); expect(() => parseBackup(backup)).toThrow(); });
   it('rejects duplicate IDs and orphan health references', () => {
     const measuredAt = new Date().toISOString();

@@ -63,7 +63,15 @@ export function normalizeStateV3(value: unknown): AppState {
   }) as AppState;
 }
 
-export function createBackup(state: AppState, note?: string): AppBackupV3 { return { format: 'life-compass-backup', version: 3, exportedAt: new Date().toISOString(), note: note?.trim() || undefined, state }; }
+export function createBackup(state: AppState, note?: string): AppBackupV3 {
+  return {
+    format: 'life-compass-backup',
+    version: 3,
+    exportedAt: new Date().toISOString(),
+    note: note?.trim() || undefined,
+    state: { ...state, restoreSnapshots: [] },
+  };
+}
 
 function legacyBackup(value: unknown): AppBackupV3 | undefined {
   if (!value || typeof value !== 'object') return undefined;
