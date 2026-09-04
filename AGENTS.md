@@ -12,3 +12,10 @@
   files into this repository or into public issues/reviews.
 - Health integrations remain read-only, camera preview remains no-save, and
   product claims must not expand into diagnosis, treatment, or guarantees.
+- For Fable 5.1, Arena, or another external AI review, use only a public-safe
+  packet built from this repository and generalized requirements. Never send
+  private notes, health/device data, backups, credentials, or unpublished context.
+- External AI findings are proposals. Codex owns ACCEPT / MODIFY / REJECT decisions,
+  implementation, tests, diff review, and any follow-up review.
+- Do not paste raw external-AI output or private project-management notes into
+  this public repository.
