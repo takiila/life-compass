@@ -15,3 +15,15 @@
   evidence and reconcile AI-Memory at the end of the work.
 - Never commit secrets, populated environment files, credentials, health data,
   device data, local databases, or user backup files.
+- When Fable 5.1, Arena, or another external AI is used for review, first read
+  `../AI-Memory/Knowledge/外部AIレビュー運用.md` (or the same file under
+  `C:\soft\AI-Memory\Knowledge\`). Never send AI-Memory itself or private user
+  data to the external AI; build a public-safe review packet from public source and
+  generalized requirements only.
+- External AI findings are proposals. Codex owns ACCEPT / MODIFY / REJECT decisions,
+  implementation, tests, diff review, and any follow-up review.
+- After a meaningful external-AI or specification-change cycle, reconcile the
+  resulting current facts into AI-Memory. Keep durable design in PROJECT/DECISIONS,
+  unfinished accepted work in TODO, current evidence in CURRENT, user friction in
+  FEEDBACK, feature state in PROVENANCE, acceptance in JOURNEYS, and migration state
+  in FEATURES. Do not paste raw external-AI output into authoritative documents.
