@@ -48,6 +48,9 @@ Desktop.ini
 # typescript
 *.tsbuildinfo
 
+# local planning artifacts
+docs/superpowers/
+
 # generated native folders
 /ios
 /android

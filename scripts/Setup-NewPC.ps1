@@ -110,10 +110,4 @@ Write-Host 'Life Compass setup completed.'
 Write-Host "PC review: $projectRoot\START_REVIEW_WINDOWS.cmd"
 Write-Host "Direct command: cd $projectRoot ; npm run web"
 
-$memoryLauncher = Join-Path (Split-Path -Parent $projectRoot) 'AI-Memory\START_PROJECTS.cmd'
-if (Test-Path $memoryLauncher) {
-    Write-Host "All-project launcher: $memoryLauncher"
-}
-else {
-    Write-Host 'AI-Memory launcher: clone takiila/AI-Memory beside this repository, then use START_PROJECTS.cmd.'
-}
+Write-Host 'This setup is self-contained; use START_REVIEW_WINDOWS.cmd for browser review.'
